@@ -1,0 +1,41 @@
+This repo contains four implementations of Levenshtein Distance, based on https://www.youtube.com/watch?v=Cu7Tl7FGigQ
+
+Each of the four implementations provides increasingly better performance (for details, see Wikipedia: https://en.wikipedia.org/wiki/Levenshtein_distancep[Levenshtein Distance]:
+
+* `naiveDistance` implements the naive recursive solution defined by Levenshtein and performs *terribly*.
+* `matrixDistance` implements a matrix-based solution without recursion which is roughly 53,000x faster than `naiveDistance` on my benchmark inputs
+* `doubleRowDistance` is an optimized implementation of the matrix-based solution. It swaps back and forth between two arrays to effectively build the same matrix as `matrixDistance`, but uses less memory and is slightly over twice as fast.
+* `singleRowDistance` generates each row of the matrix by overwriting the previous row "in-place", using only one array and one additional variable. It is only fractionally faster than `doubleRowDistance` and uses slightly less memory.
+
+[source,plain]
+----
+$ go test -bench=.
+goos: darwin
+goarch: amd64
+pkg: github.com/meagar/lev-go
+cpu: Intel(R) Core(TM) i7-1068NG7 CPU @ 2.30GHz
+BenchmarkNaiveDistance-8       	      36	  31623136 ns/op
+BenchmarkMatrixDistance-8      	 1855875	       649.0 ns/op
+BenchmarkDoubleRowDistance-8   	 4638642	       252.1 ns/op
+BenchmarkSingleRowDistance-8   	 5251591	       226.5 ns/op
+PASS
+ok  	github.com/meagar/lev-go	6.239s
+----
+
+Additionally, a simple spellchecker is provided using the embedded word list provided in https://www.youtube.com/watch?v=Cu7Tl7FGigQ[Creel's video].
+
+[source,plain]
+----
+$ go run ./cmd/main.go dnosaurs
+Suggestions for "dnosaurs"
+0. dinosaurs (1)
+1. deinosaurs (2)
+2. dinosaur (2)
+3. allosaurs (3)
+4. deodars (3)
+5. deinosaur (3)
+6. dinosauria (3)
+7. dinosauric (3)
+8. danseurs (3)
+9. dioscuri (3)
+----
