@@ -10,26 +10,32 @@ import (
 )
 
 type TestCase struct {
-	a, b string
-	want int
+	a, b  string
+	want  int // expected Levenshtein result
+	wantD int // expected Damerau-Levenshtein result
 }
 
 var testCases = []TestCase{
-	{"foo", "", 3},
-	{"", "asdf", 4},
-	{"foo", "bar", 3},
-	{"foo", "foobar", 3},
-	{"foobar", "bar", 3},
-	{"foo", "foo", 0},
-	{"fast", "past", 1},
-	{"boot", "tube", 4},
-	{"cabbages", "rabbit", 5},
-	{"foot", "poof", 2},
-	{"kitten", "sitting", 3},
-	{"alphabet", "fgsdgszxc", 9},
-	{"aaaaaaaaaa", "bbbbbbbbbb", 10},
+	{"foo", "", 3, 3},       // three deletions
+	{"", "asdf", 4, 4},      // four additions
+	{"foo", "bar", 3, 3},    // three replacements
+	{"foo", "foobar", 3, 3}, // three additions ("bar")
+	{"foobar", "bar", 3, 3}, // three deletions ("foo")
+	{"foo", "foo", 0, 0},    // identical
+	{"fast", "past", 1, 1},  // one replacement
+	{"boot", "tube", 4, 4},  // four replacements
+	{"cabbages", "rabbit", 5, 5},
+	{"foot", "poof", 2, 2},
+	{"kitten", "sitting", 3, 3},
+	{"alphabet", "fgsdgszxc", 9, 9},
+	{"aaaaaaaaaa", "bbbbbbbbbb", 10, 10},
+	{"ab", "ba", 2, 1},
+	{"abab", "baba", 2, 2},
+	{"abcd", "badc", 3, 2},
+	{"blah", "flha", 3, 2},
 }
 
+// Tests a Levenshtein distance function
 func testFn(t *testing.T, fn func(a, b string) int) {
 	t.Helper()
 	fnName := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
@@ -45,6 +51,21 @@ func testFn(t *testing.T, fn func(a, b string) int) {
 	}
 }
 
+// Tests a Damerau-Levenshtein distance function
+func testFnD(t *testing.T, fn func(a, b string) int) {
+	t.Helper()
+	fnName := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s(%q, %q)", fnName, tc.a, tc.b), func(t *testing.T) {
+			got := fn(tc.a, tc.b)
+
+			if got != tc.wantD {
+				t.Errorf("%s(%q, %q): Got %d, want %d", fnName, tc.a, tc.b, got, tc.wantD)
+				t.FailNow()
+			}
+		})
+	}
+}
 func TestDistance(t *testing.T) {
 	testFn(t, Distance)
 }
@@ -54,6 +75,10 @@ func TestNaiveDistance(t *testing.T) {
 
 func TestMatrixDistance(t *testing.T) {
 	testFn(t, matrixDistance)
+}
+
+func TestMatrixDistanceD(t *testing.T) {
+	testFnD(t, matrixDistanceD)
 }
 
 func TestDoubleRowDistance(t *testing.T) {
@@ -97,7 +122,7 @@ func TestMin(t *testing.T) {
 		arr := []int{a, b, c}
 		sort.Ints(arr)
 		want := arr[0]
-		got := min(a, b, c)
+		got := min3(a, b, c)
 
 		if got != want {
 			t.Errorf("min(%d, %d, %d): Got %d, want %d", a, b, c, got, want)
