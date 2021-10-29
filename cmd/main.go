@@ -34,7 +34,7 @@ func main() {
 	eachWord(func(word string) {
 		results = append(results, Result{
 			word:  word,
-			score: lev.Distance(candidateWord, word),
+			score: lev.DistanceD(candidateWord, word),
 		})
 	})
 

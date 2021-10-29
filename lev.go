@@ -1,3 +1,5 @@
+// Package lev implements the Levenshtein and Damerau-Levenshtein algorithms for computing
+// the edit distance between two words.
 package lev
 
 // Distance computes and returns the Levenshtein Distance between two words
