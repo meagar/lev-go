@@ -109,7 +109,13 @@ func BenchmarkDoubleRowDistance(b *testing.B) {
 
 func BenchmarkSingleRowDistance(b *testing.B) {
 	for n := 0; n < b.N; n++ {
+		singleRowDistance("a", "b")
+		singleRowDistance("aa", "bb")
+		singleRowDistance("aaaaa", "bbbbbbbb")
+		singleRowDistance("aaaaaaa", "bbbbbbbbbb")
 		singleRowDistance("aaaaaaaaaa", "bbbbbbbbbb")
+		singleRowDistance("a", "bbbbbbbbbb")
+		singleRowDistance("aaaaaaaaaa", "b")
 	}
 }
 

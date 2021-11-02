@@ -3,16 +3,19 @@
 package lev
 
 // Distance computes and returns the Levenshtein Distance between two words
+//
 // See https://en.wikipedia.org/wiki/Levenshtein_distance
 func Distance(a, b string) int {
 	return singleRowDistance(a, b)
 }
 
 // DistanceD computes and returns the Damerau–Levenshtein distance between two words.
-// See https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
+//
 // The Damerau-Levenshtein algorithm also allows for transposing two adjacent letters;
 // where The Levenshtein distance from "ab" to "ba" would be 2 (one deletion, one addition),
 // the Damerau-Levenshtein distance is 1, a single transposition/swap of the two letters.
+//
+// See https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
 func DistanceD(a, b string) int {
 	return matrixDistanceD(a, b)
 }
@@ -119,10 +122,9 @@ func matrixDistanceD(a, b string) int {
 					matrix[x-1][y-1],
 				)
 
+				// This is the only modification required to change Levenshtein into Damerau–Levenshtein
 				if x > 1 && y > 1 && a[y-1] == b[x-2] && a[y-2] == b[x-1] {
-					matrix[x][y] = min2(
-						matrix[x][y],
-						matrix[x-2][y-2]+1) // transposition
+					matrix[x][y] = min2(matrix[x][y], matrix[x-2][y-2]+1)
 				}
 			}
 		}
@@ -180,6 +182,7 @@ func singleRowDistance(a, b string) int {
 	if n == 0 {
 		return m
 	}
+
 	if m == 0 {
 		return n
 	}
@@ -190,7 +193,7 @@ func singleRowDistance(a, b string) int {
 		row[i] = i
 	}
 
-	var last int
+	last := 0
 
 	for y := 0; y < m; y++ {
 		last, row[0] = row[0], y+1
@@ -206,6 +209,7 @@ func singleRowDistance(a, b string) int {
 			}
 		}
 	}
+
 	return row[n]
 }
 
